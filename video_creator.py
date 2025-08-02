@@ -3,30 +3,30 @@ from moviepy.editor import VideoFileClip, AudioFileClip
 def create_video(audio_path):
     print("🎬 Starting video creation...")
 
-    # حملنا الفيديو مسبقًا إلى هذا المسار
-    video_path = "assets/video.mp4"
-    
-    # قص الفيديو إلى 30 ثانية كحد أقصى
-    video = VideoFileClip(video_path).subclip(0, 30)
-    
-    # تغيير الأبعاد إلى 9:16 (شورت) مع crop من المنتصف
-    video = video.resize(height=1920)
-    video = video.crop(x_center=video.w / 2, width=1080)  # عرض 1080 مناسب لشورت
-    
-    # تحميل ملف الصوت
+    # تحميل ملف الصوت ومعرفة مدته
     audio = AudioFileClip(audio_path)
+    audio_duration = audio.duration
 
-    # دمج الصوت مع الفيديو بالكامل
-    video = video.set_audio(audio).set_duration(audio.duration)
+    # تحميل الفيديو الأصلي
+    video = VideoFileClip("assets/video.mp4")
 
-    # إخراج الفيديو النهائي
+    # قص الفيديو حسب مدة الصوت (مع حد أقصى مثلاً 60 ثانية)
+    video = video.subclip(0, min(audio_duration, 60))
+
+    # تحويله لشكل رأسي 9:16
+    video = video.resize(height=1920)
+    video = video.crop(x_center=video.w / 2, width=1080)
+
+    # دمج الصوت مع الفيديو
+    final_video = video.set_audio(audio).set_duration(audio_duration)
+
+    # حفظ الفيديو النهائي
     output_path = "assets/final.mp4"
-    video.write_videofile(
+    final_video.write_videofile(
         output_path,
         fps=30,
         codec="libx264",
         audio_codec="aac",
-        bitrate="3000k",
         preset="medium"
     )
 
