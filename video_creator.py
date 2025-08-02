@@ -1,28 +1,33 @@
-from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
-from audio_generator import generate_audio
-import os
-import requests
+from moviepy.editor import VideoFileClip, AudioFileClip
 
-def download_video():
-    url = "https://player.vimeo.com/external/2887463.sd.mp4"  # أي فيديو حر قصير
-    r = requests.get(url)
-    path = "assets/background.mp4"
-    with open(path, "wb") as f:
-        f.write(r.content)
-    return path
+def create_video(audio_path):
+    print("🎬 Starting video creation...")
 
-def create_video():
-    print("🎥 Creating short video...")
+    # حملنا الفيديو مسبقًا إلى هذا المسار
+    video_path = "assets/video.mp4"
     
-    video_path = download_video()
-    audio_path = generate_audio("This is an auto-generated short. Stay tuned!")
+    # قص الفيديو إلى 30 ثانية كحد أقصى
+    video = VideoFileClip(video_path).subclip(0, 30)
     
-    video = VideoFileClip(video_path).subclip(0, 20).resize(height=1080).crop(x_center=540, width=1080)  # شورت 9:16
+    # تغيير الأبعاد إلى 9:16 (شورت) مع crop من المنتصف
+    video = video.resize(height=1920)
+    video = video.crop(x_center=video.w / 2, width=1080)  # عرض 1080 مناسب لشورت
+    
+    # تحميل ملف الصوت
     audio = AudioFileClip(audio_path)
-    
+
+    # دمج الصوت مع الفيديو بالكامل
     video = video.set_audio(audio).set_duration(audio.duration)
-    
-    output_path = "assets/output.mp4"
-    video.write_videofile(output_path, codec="libx264", audio_codec="aac", fps=30, bitrate="3000k", preset="slow")
-    
-    print("✅ Video created at", output_path)
+
+    # إخراج الفيديو النهائي
+    output_path = "assets/final.mp4"
+    video.write_videofile(
+        output_path,
+        fps=30,
+        codec="libx264",
+        audio_codec="aac",
+        bitrate="3000k",
+        preset="medium"
+    )
+
+    print(f"✅ Final video saved to: {output_path}")
