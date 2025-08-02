@@ -1,27 +1,30 @@
-# في ملف tts.py
-def text_to_speech(text):
-    import requests
-    import os
+import openai
+import os
+import random
 
-    voice_id = "EXAVITQu4vr4xnSDxMaL"
-    api_key = os.getenv("ELEVENLABS_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-    headers = {
-        "xi-api-key": api_key,
-        "Content-Type": "application/json"
-    }
-    data = {
-        "text": text,
-        "voice_settings": {
-            "stability": 0.4,
-            "similarity_boost": 0.75
-        }
-    }
+def generate_text():
+    # كلمات مفتاحية لبداية الجملة
+    keywords = [
+        "Did you know that",
+        "Here's a shocking fact:",
+        "Let's talk about this:",
+        "Unbelievable but true:",
+        "Get this:",
+        "Surprisingly,"
+    ]
 
-    response = requests.post(url, headers=headers, json=data)
-    output_path = "assets/audio.mp3"
-    with open(output_path, "wb") as f:
-        f.write(response.content)
+    intro = random.choice(keywords)
 
-    return output_path
+    # أرسل الطلب لـ GPT مع الكلمات المفتاحية
+    prompt = f"{intro} give me a short, interesting fact in one sentence for a short vertical video."
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message["content"].strip()
